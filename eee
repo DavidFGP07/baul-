@@ -1,0 +1,65 @@
+const datos = require("./datos.json");
+
+// CODIGO DE PUNTO 1 AQUI
+function puntoUno(estudiantes) {
+  let primerPaso = estudiantes.filter(estudiante => estudiante.info_extra_curriculares.length > 0);
+  let segundoPaso = primerPaso.filter(estudiante => estudiante.info_extra_curriculares.some(actividad => actividad.nombre === "INNOVA"));
+  return segundoPaso.map(estudiante => estudiante.info_personal.correo);
+}
+
+// CODIGO DE PUNTO 2 AQUI
+function puntoDos(estudiantes) {
+  return Object.values(estudiantes.reduce((mejoresPorSemestre, estudiante) =>
+    estudiante.info_matricula.reduce((mejoresPorCurso, curso) => {
+      let promedio = curso.notas.map(nota => nota.nota * nota.peso).reduce((acc, nota) => acc + nota, 0);
+      const sem = mejoresPorCurso[curso.semestre] && mejoresPorCurso[curso.semestre].promedio >
+        promedio ? mejoresPorCurso[curso.semestre] :
+        {
+          nombreCompleto: `${estudiante.info_personal.nombre} ${estudiante.info_personal.apellido}`,
+          promedio: promedio
+        };
+      return { ...mejoresPorCurso, [curso.semestre]: sem };
+    }, mejoresPorSemestre), {})).map(est => est.nombreCompleto);
+}
+
+// CODIGO DE PUNTO 3 AQUI
+function puntoTres(estudiantes) {
+  return estudiantes.filter((estudiante) => estudiante.info_matricula.every((curso) => curso.semestre === 1))
+  .map((estudiante) => {
+    const {
+      gender,
+      nombre,
+      apellido,
+      altura,
+      nacimiento,
+      correo,
+    } = estudiante.info_personal;
+    return {
+      gender: gender,
+      titulo: gender === "M" ? "Sr.": "Srta",
+      nombreCompleto: `${nombre} ${apellido}`,
+      primerNombre: nombre,
+      primerApellido: apellido,
+      altura: Math.round(altura * 100),
+      edad:  2025 - nacimiento.split("-")[0],  
+      nacimiento: nacimiento,
+      correo: correo,
+      usuario: correo.split("@")[0]
+    }
+  })
+}
+
+// CODIGO DE PUNTO 4 AQUI
+function puntoCuatro(estudiantes) {
+  const estudianteMasAlto = estudiantes
+    .filter(estudiante => estudiante.info_extra_curriculares.some(actividad => actividad.nombre === "Baloncesto"))
+    .reduce((masAlto, estudiante) => {
+      return estudiante.info_personal.altura > (masAlto?.info_personal.altura || 0) ? estudiante : masAlto;
+    }, null);
+
+  return `${estudianteMasAlto.info_personal.nombre} ${estudianteMasAlto.info_personal.apellido}`
+}
+console.log(puntoUno(datos));
+console.log(puntoDos(datos));
+console.log(JSON.stringify(puntoTres(datos), null, 2));
+console.log(puntoCuatro(datos));
